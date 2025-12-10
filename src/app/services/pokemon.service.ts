@@ -1,13 +1,18 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable, forkJoin, map } from 'rxjs';
+import { Observable, forkJoin, map, switchMap, catchError, of } from 'rxjs';
+
+export interface Move {
+  name: string;
+  type: string;
+}
 
 export interface Pokemon {
   id: number;
   name: string;
   types: string[];
   stats: { name: string; value: number }[];
-  moves: string[];
+  moves: Move[];
   sprite: string;
 }
 
@@ -15,7 +20,7 @@ export interface FusedPokemon {
   name: string;
   types: string[];
   stats: { name: string; value: number }[];
-  moves: string[];
+  moves: Move[];
   basePokemon: Pokemon[];
   createdAt: Date;
 }
@@ -35,17 +40,44 @@ export class PokemonService {
 
   getPokemonById(id: number): Observable<Pokemon> {
     return this.http.get<any>(`${this.apiUrl}/pokemon/${id}`).pipe(
-      map(data => ({
-        id: data.id,
-        name: data.name,
-        types: data.types.map((t: any) => t.type.name),
-        stats: data.stats.map((s: any) => ({
-          name: s.stat.name.replace('-', '_'),
-          value: s.base_stat
-        })),
-        moves: data.moves.slice(0, 2).map((m: any) => m.move.name),
-        sprite: data.sprites.front_default
-      }))
+      switchMap(data => {
+        const moveRequests = data.moves.slice(0, 4).map((m: any) =>
+          this.http.get<any>(m.move.url).pipe(
+            map((moveData: any): Move => {
+              const moveType = moveData.type?.name || 'normal';
+              console.log(`[DEBUG] Movimiento: ${moveData.name} | Tipo recibido: ${moveData.type?.name || 'NO TIENE TIPO'} | Tipo usado: ${moveType}`);
+              if (!moveData.type?.name) {
+                console.warn(`Move ${moveData.name} no tiene tipo en la API, usando 'normal'`);
+              }
+              return {
+                name: moveData.name,
+                type: moveType
+              };
+            }),
+            catchError(error => {
+              console.error('Error obteniendo tipo de movimiento:', error);
+              return of({
+                name: m.move.name,
+                type: 'normal'
+              } as Move);
+            })
+          )
+        );
+
+        return forkJoin<Move[]>(moveRequests).pipe(
+          map((moves: Move[]): Pokemon => ({
+            id: data.id,
+            name: data.name,
+            types: data.types.map((t: any) => t.type.name),
+            stats: data.stats.map((s: any) => ({
+              name: s.stat.name.replace('-', '_'),
+              value: s.base_stat
+            })),
+            moves,
+            sprite: data.sprites.front_default
+          }))
+        );
+      })
     );
   }
 
@@ -81,7 +113,13 @@ export class PokemonService {
       ...pokemon2.moves,
       ...pokemon3.moves
     ];
-    const uniqueMoves = Array.from(new Set(allMoves)).slice(0, 2);
+    const uniqueMovesMap = new Map<string, Move>();
+    allMoves.forEach(move => {
+      if (!uniqueMovesMap.has(move.name)) {
+        uniqueMovesMap.set(move.name, move);
+      }
+    });
+    const uniqueMoves = Array.from(uniqueMovesMap.values()).slice(0, 4);
 
     return {
       name: fusedName,

@@ -7,8 +7,11 @@ import { MatChipsModule } from '@angular/material/chips';
 import { MatIconModule } from '@angular/material/icon';
 import { MatToolbarModule } from '@angular/material/toolbar';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
+import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { PokemonService, Pokemon, FusedPokemon } from '../../services/pokemon.service';
 import { FavoritesService } from '../../services/favorites.service';
+import { TypeColorsService } from '../../services/type-colors.service';
+import { ConfirmDialogComponent } from '../shared/confirm-dialog/confirm-dialog.component';
 
 @Component({
   selector: 'app-fusion',
@@ -21,7 +24,8 @@ import { FavoritesService } from '../../services/favorites.service';
     MatChipsModule,
     MatIconModule,
     MatToolbarModule,
-    MatSnackBarModule
+    MatSnackBarModule,
+    MatDialogModule
   ],
   templateUrl: './fusion.component.html',
   styleUrl: './fusion.component.css',
@@ -40,31 +44,12 @@ export class FusionComponent implements OnInit {
     return fused ? this.favoritesService.isFavorite(fused) : false;
   });
 
-  private readonly TYPE_COLORS: Record<string, string> = {
-    normal: 'hsl(0, 0%, 50%)',
-    fire: 'hsl(0, 84%, 60%)',
-    water: 'hsl(217, 91%, 60%)',
-    electric: 'hsl(45, 93%, 58%)',
-    grass: 'hsl(142, 71%, 45%)',
-    ice: 'hsl(188, 78%, 70%)',
-    fighting: 'hsl(0, 65%, 47%)',
-    poison: 'hsl(280, 50%, 50%)',
-    ground: 'hsl(45, 60%, 55%)',
-    flying: 'hsl(250, 60%, 65%)',
-    psychic: 'hsl(330, 65%, 65%)',
-    bug: 'hsl(60, 50%, 45%)',
-    rock: 'hsl(45, 40%, 50%)',
-    ghost: 'hsl(270, 40%, 55%)',
-    dragon: 'hsl(260, 80%, 65%)',
-    dark: 'hsl(0, 0%, 30%)',
-    steel: 'hsl(210, 20%, 70%)',
-    fairy: 'hsl(330, 60%, 75%)'
-  };
-
   constructor(
     private pokemonService: PokemonService,
     private favoritesService: FavoritesService,
-    private snackBar: MatSnackBar
+    private snackBar: MatSnackBar,
+    private typeColorsService: TypeColorsService,
+    private dialog: MatDialog
   ) {}
 
   ngOnInit(): void {
@@ -92,7 +77,8 @@ export class FusionComponent implements OnInit {
         this.snackBar.open('Error al cargar los Pokémon', 'Cerrar', {
           duration: 3000,
           horizontalPosition: 'center',
-          verticalPosition: 'top'
+          verticalPosition: 'top',
+          panelClass: ['snackbar-error']
         });
       }
     });
@@ -101,17 +87,33 @@ export class FusionComponent implements OnInit {
   addToFavorites(): void {
     const fused = this.fusedPokemon();
     if (fused) {
-      this.favoritesService.addFavorite(fused);
-      this.snackBar.open('Fusión guardada en favoritos', 'Cerrar', {
-        duration: 2000,
-        horizontalPosition: 'center',
-        verticalPosition: 'top'
+      const dialogRef = this.dialog.open(ConfirmDialogComponent, {
+        width: '400px',
+        data: {
+          title: 'Guardar en favoritos',
+          message: `¿Estás seguro de que deseas guardar "${fused.name}" en favoritos?`,
+          confirmText: 'Guardar',
+          cancelText: 'Cancelar'
+        }
+      });
+
+      dialogRef.afterClosed().subscribe(result => {
+        if (result) {
+          this.favoritesService.addFavorite(fused);
+          this.snackBar.open('Fusión guardada en favoritos', 'Cerrar', {
+            duration: 2000,
+            horizontalPosition: 'center',
+            verticalPosition: 'top',
+            panelClass: ['snackbar-success']
+          });
+          this.generateFusion();
+        }
       });
     }
   }
 
   getTypeColor(type: string): string {
-    return this.TYPE_COLORS[type] || '#68A090';
+    return this.typeColorsService.getTypeColor(type);
   }
 
   formatStatName(name: string): string {

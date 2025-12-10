@@ -85,3 +85,95 @@ body {
   width: 5rem;
   border-radius: 9999px;
 }
+
+.mat-mdc-raised-button.mat-primary:not(:disabled) {
+  background-color: hsl(var(--primary)) !important;
+  color: hsl(var(--primary-foreground)) !important;
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05) !important;
+}
+
+.mat-mdc-raised-button.mat-primary:not(:disabled):hover {
+  background-color: hsl(var(--primary) / 0.9) !important;
+  box-shadow: 0 2px 4px 0 rgba(0, 0, 0, 0.1) !important;
+}
+
+.mat-mdc-button:not(:disabled):not(.mat-primary):not(.mat-warn):not(.mat-accent) {
+  color: hsl(var(--muted-foreground)) !important;
+}
+
+.mat-mdc-button:not(:disabled):not(.mat-primary):not(.mat-warn):not(.mat-accent):hover {
+  background-color: hsl(var(--muted)) !important;
+  color: hsl(var(--foreground)) !important;
+}
+
+button.mat-mdc-raised-button:not(:disabled) {
+  background-color: hsl(var(--primary)) !important;
+  color: hsl(var(--primary-foreground)) !important;
+}
+
+button.mat-mdc-raised-button:not(:disabled):hover {
+  background-color: hsl(var(--primary) / 0.9) !important;
+}
+
+.mat-mdc-raised-button.mat-warn:not(:disabled) {
+  background-color: hsl(var(--destructive)) !important;
+  color: hsl(var(--destructive-foreground)) !important;
+}
+
+.mat-mdc-raised-button.mat-warn:not(:disabled):hover {
+  background-color: hsl(var(--destructive) / 0.9) !important;
+}
+
+button.delete-button.mat-mdc-raised-button:not(:disabled) {
+  background-color: hsl(var(--destructive)) !important;
+  color: hsl(var(--destructive-foreground)) !important;
+}
+
+button.delete-button.mat-mdc-raised-button:not(:disabled):hover {
+  background-color: hsl(var(--destructive) / 0.9) !important;
+}
+
+button.delete-button.mat-mdc-raised-button:not(:disabled) .mat-mdc-button-persistent-ripple {
+  background-color: hsl(var(--destructive-foreground) / 0.1) !important;
+}
+
+.dialog-button-destructive.mat-mdc-raised-button:not(:disabled) {
+  background-color: hsl(var(--destructive)) !important;
+  color: hsl(var(--destructive-foreground)) !important;
+}
+
+.dialog-button-destructive.mat-mdc-raised-button:not(:disabled):hover {
+  background-color: hsl(var(--destructive) / 0.9) !important;
+}
+
+.dialog-button-destructive.mat-mdc-raised-button:not(:disabled) .mat-mdc-button-base {
+  background-color: hsl(var(--destructive)) !important;
+  color: hsl(var(--destructive-foreground)) !important;
+}
+
+.snackbar-success {
+  background-color: #10b981 !important;
+  color: white !important;
+}
+
+.snackbar-success .mat-mdc-snack-bar-action {
+  color: white !important;
+}
+
+.snackbar-error {
+  background-color: hsl(var(--destructive)) !important;
+  color: hsl(var(--destructive-foreground)) !important;
+}
+
+.snackbar-error .mat-mdc-snack-bar-action {
+  color: hsl(var(--destructive-foreground)) !important;
+}
+
+.snackbar-warning {
+  background-color: #f59e0b !important;
+  color: white !important;
+}
+
+.snackbar-warning .mat-mdc-snack-bar-action {
+  color: white !important;
+}

@@ -4,32 +4,38 @@
       <span class="toolbar-title">PokéFusion</span>
     </a>
     <span class="spacer"></span>
-    <span class="favorites-count">{{ favorites().length }}</span>
+    <nav class="navbar-nav">
+      <a routerLink="/" class="nav-link" routerLinkActive="active">Re-fusionar</a>
+      <a routerLink="/favorites" class="nav-link" routerLinkActive="active">Favoritos</a>
+    </nav>
   </mat-toolbar>
 
   <div class="content">
-    <nav class="breadcrumb" aria-label="Breadcrumb">
-      <a routerLink="/" class="breadcrumb-link">Inicio</a>
-      <span class="breadcrumb-separator">/</span>
-      <span class="breadcrumb-current">Favoritos</span>
-    </nav>
-    @if (!loading() && favorites().length === 0) {
-      <div class="empty-state">
-        <mat-icon class="empty-icon">favorite_border</mat-icon>
-        <h2 class="empty-title">No tienes favoritos aún</h2>
-        <p class="empty-text">Guarda tus fusiones favoritas desde la página principal</p>
-        <button 
-          mat-raised-button 
-          routerLink="/"
-          class="empty-button">
-          <mat-icon>home</mat-icon>
-          <span>Ir a Fusionar</span>
-        </button>
-      </div>
-    }
+    <div class="favorites-header">
+      <h1 class="page-title">Tus Fusiones Favoritas</h1>
+      <p class="page-subtitle">
+        @if (loading()) {
+          <span>Cargando...</span>
+        } @else {
+          <span>{{ allFavorites().length }} {{ allFavorites().length === 1 ? 'fusión guardada' : 'fusiones guardadas' }}</span>
+        }
+      </p>
+      @if (!loading() && hasSelection()) {
+        <div class="selection-actions">
+          <button
+            mat-raised-button
+            color="warn"
+            (click)="removeSelected()"
+            class="delete-selected-button">
+            <mat-icon>delete</mat-icon>
+            <span>Eliminar seleccionados ({{ selectedFavorites().size }})</span>
+          </button>
+        </div>
+      }
+    </div>
 
     @if (loading()) {
-      <div class="favorites-skeleton-grid">
+      <div class="favorites-grid">
         @for (item of [1, 2, 3, 4]; track item) {
           <mat-card class="favorite-card skeleton-favorite-card">
             <div class="card-header">
@@ -67,8 +73,9 @@
               <div class="moves-mini">
                 <div class="skeleton skeleton-mini-title"></div>
                 <div class="moves-mini-container">
-                  <div class="skeleton skeleton-mini-move-chip"></div>
-                  <div class="skeleton skeleton-mini-move-chip"></div>
+                  @for (item of [1, 2, 3, 4]; track item) {
+                    <div class="skeleton skeleton-mini-move-chip"></div>
+                  }
                 </div>
               </div>
             </div>
@@ -80,21 +87,37 @@
       </div>
     }
 
-    @if (!loading() && favorites().length > 0) {
-      <div class="favorites-header">
-        <h1 class="page-title">Tus Fusiones Favoritas</h1>
-        <p class="page-subtitle">{{ favorites().length }} {{ favorites().length === 1 ? 'fusión guardada' : 'fusiones guardadas' }}</p>
+    @if (!loading() && allFavorites().length === 0) {
+      <div class="empty-state">
+        <mat-icon class="empty-icon">favorite_border</mat-icon>
+        <h2 class="empty-title">No tienes favoritos aún</h2>
+        <p class="empty-text">Guarda tus fusiones favoritas desde la página principal</p>
+        <button
+          mat-raised-button
+          routerLink="/"
+          class="empty-button">
+          <mat-icon>home</mat-icon>
+          <span>Ir a Fusionar</span>
+        </button>
       </div>
+    }
 
+    @if (!loading() && displayedFavorites().length > 0) {
       <div class="favorites-grid">
-        @for (favorite of favorites(); track favorite.name + favorite.createdAt; let i = $index) {
-          <mat-card class="favorite-card">
+        @for (favorite of displayedFavorites(); track favorite.name + favorite.createdAt; let i = $index) {
+          <mat-card class="favorite-card" [class.selected]="isSelected(i)">
             <mat-card-header class="card-header">
               <div class="favorite-title-container">
+                <mat-checkbox
+                  [checked]="isSelected(i)"
+                  (change)="toggleSelection(i)"
+                  [disableRipple]="true"
+                  class="favorite-checkbox">
+                </mat-checkbox>
                 <mat-card-title class="favorite-name">{{ favorite.name }}</mat-card-title>
                 <div class="types-container">
                   @for (type of favorite.types; track type) {
-                    <mat-chip 
+                    <mat-chip
                       class="type-chip"
                       [style.background-color]="getTypeColor(type)"
                       [style.color]="'white'">
@@ -133,16 +156,21 @@
               <div class="moves-mini">
                 <h4 class="mini-section-title">Movimientos</h4>
                 <div class="moves-mini-container">
-                  @for (move of favorite.moves; track move) {
-                    <mat-chip class="move-mini-chip">{{ move }}</mat-chip>
+                  @for (move of favorite.moves; track move.name) {
+                    <mat-chip
+                      class="move-mini-chip"
+                      [style.background-color]="getTypeColor(move.type)"
+                      [style.color]="'white'">
+                      {{ move.name }}
+                    </mat-chip>
                   }
                 </div>
               </div>
             </mat-card-content>
 
             <mat-card-actions class="card-actions">
-              <button 
-                mat-raised-button 
+              <button
+                mat-raised-button
                 (click)="removeFavorite(i)"
                 class="delete-button"
                 aria-label="Eliminar favorito">
@@ -153,7 +181,19 @@
           </mat-card>
         }
       </div>
+
+      @if (loadingMore()) {
+        <div class="loading-more">
+          <div class="loading-more-spinner"></div>
+          <span>Cargando más fusiones...</span>
+        </div>
+      }
+
+      @if (!hasMore() && displayedFavorites().length > 0) {
+        <div class="end-message">
+          <p>Has visto todas tus fusiones favoritas</p>
+        </div>
+      }
     }
   </div>
 </div>
-

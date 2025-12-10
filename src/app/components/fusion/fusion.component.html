@@ -4,13 +4,10 @@
       <span class="toolbar-title">PokéFusion</span>
     </a>
     <span class="spacer"></span>
-    <button 
-      mat-icon-button 
-      routerLink="/favorites"
-      aria-label="Ver favoritos"
-      class="favorites-button">
-      <mat-icon>favorite</mat-icon>
-    </button>
+    <nav class="navbar-nav">
+      <a routerLink="/" class="nav-link" routerLinkActive="active">Re-fusionar</a>
+      <a routerLink="/favorites" class="nav-link" routerLinkActive="active">Favoritos</a>
+    </nav>
   </mat-toolbar>
 
   <div class="content">
@@ -87,8 +84,9 @@
                   <div class="skeleton skeleton-heading-text"></div>
                 </div>
                 <div class="moves-container">
-                  <div class="skeleton skeleton-move-chip"></div>
-                  <div class="skeleton skeleton-move-chip"></div>
+                  @for (item of [1, 2, 3, 4]; track item) {
+                    <div class="skeleton skeleton-move-chip"></div>
+                  }
                 </div>
               </div>
             </div>
@@ -164,8 +162,13 @@
                 Movimientos
               </h3>
               <div class="moves-container">
-                @for (move of fusedPokemon()!.moves; track move) {
-                  <mat-chip class="move-chip">{{ move }}</mat-chip>
+                @for (move of fusedPokemon()!.moves; track move.name) {
+                  <mat-chip
+                    class="move-chip"
+                    [style.background-color]="getTypeColor(move.type)"
+                    [style.color]="'white'">
+                    {{ move.name }}
+                  </mat-chip>
                 }
               </div>
             </div>
