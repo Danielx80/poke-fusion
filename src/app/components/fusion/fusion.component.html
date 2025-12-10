@@ -123,7 +123,7 @@
                   <mat-chip
                     class="type-chip"
                     [style.background-color]="getTypeColor(type)"
-                    [style.color]="'white'">
+                    [style.color]="getTextColorForType(type)">
                     {{ type }}
                   </mat-chip>
                 }
@@ -166,7 +166,7 @@
                   <mat-chip
                     class="move-chip"
                     [style.background-color]="getTypeColor(move.type)"
-                    [style.color]="'white'">
+                    [style.color]="getTextColorForType(move.type)">
                     {{ move.name }}
                   </mat-chip>
                 }

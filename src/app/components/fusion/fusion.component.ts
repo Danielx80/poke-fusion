@@ -134,6 +134,10 @@ export class FusionComponent implements OnInit {
     return this.typeColorsService.getTypeColor(type);
   }
 
+  getTextColorForType(type: string): string {
+    return this.typeColorsService.getTextColorForType(type);
+  }
+
   formatStatName(name: string): string {
     return name.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase());
   }

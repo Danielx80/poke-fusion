@@ -38,6 +38,7 @@ export class FavoritesComponent implements OnInit, OnDestroy {
   displayedFavorites = signal<FavoriteWithId[]>([]);
   loading = signal(true);
   loadingMore = signal(false);
+  error = signal<string | null>(null);
   selectedFavorites = signal<Set<number>>(new Set());
   pageSize = 8;
   currentPage = signal(0);
@@ -78,6 +79,7 @@ export class FavoritesComponent implements OnInit, OnDestroy {
 
   async loadFavorites(): Promise<void> {
     this.loading.set(true);
+    this.error.set(null);
     try {
       const favorites = await this.favoritesService.getFavorites();
       this.allFavorites.set(favorites);
@@ -85,6 +87,13 @@ export class FavoritesComponent implements OnInit, OnDestroy {
       this.selectedFavorites.set(new Set());
     } catch (error) {
       console.error('Error loading favorites:', error);
+      this.error.set('Error al cargar favoritos. Intenta recargar la página.');
+      this.snackBar.open('Error al cargar favoritos', 'Cerrar', {
+        duration: 3000,
+        horizontalPosition: 'center',
+        verticalPosition: 'top',
+        panelClass: ['snackbar-error']
+      });
     } finally {
       this.loading.set(false);
     }
@@ -110,9 +119,20 @@ export class FavoritesComponent implements OnInit, OnDestroy {
 
     this.loadingMore.set(true);
     setTimeout(() => {
-      this.currentPage.set(this.currentPage() + 1);
-      this.loadingMore.set(false);
-    }, 500);
+      try {
+        this.currentPage.set(this.currentPage() + 1);
+      } catch (error) {
+        console.error('Error loading more favorites:', error);
+        this.snackBar.open('Error al cargar más favoritos', 'Cerrar', {
+          duration: 2000,
+          horizontalPosition: 'center',
+          verticalPosition: 'top',
+          panelClass: ['snackbar-error']
+        });
+      } finally {
+        this.loadingMore.set(false);
+      }
+    }, 300);
   }
 
   toggleSelection(index: number): void {
@@ -220,6 +240,10 @@ export class FavoritesComponent implements OnInit, OnDestroy {
 
   getTypeColor(type: string): string {
     return this.typeColorsService.getTypeColor(type);
+  }
+
+  getTextColorForType(type: string): string {
+    return this.typeColorsService.getTextColorForType(type);
   }
 
   formatStatName(name: string): string {

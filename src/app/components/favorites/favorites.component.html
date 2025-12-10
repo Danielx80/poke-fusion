@@ -34,6 +34,20 @@
       }
     </div>
 
+    @if (error()) {
+      <div class="error-container">
+        <mat-icon class="error-icon">error_outline</mat-icon>
+        <p>{{ error() }}</p>
+        <button
+          mat-raised-button
+          (click)="loadFavorites()"
+          class="retry-button">
+          <mat-icon>refresh</mat-icon>
+          <span>Reintentar</span>
+        </button>
+      </div>
+    }
+
     @if (loading()) {
       <div class="favorites-grid">
         @for (item of [1, 2, 3, 4]; track item) {
@@ -120,7 +134,7 @@
                     <mat-chip
                       class="type-chip"
                       [style.background-color]="getTypeColor(type)"
-                      [style.color]="'white'">
+                      [style.color]="getTextColorForType(type)">
                       {{ type }}
                     </mat-chip>
                   }
@@ -160,7 +174,7 @@
                     <mat-chip
                       class="move-mini-chip"
                       [style.background-color]="getTypeColor(move.type)"
-                      [style.color]="'white'">
+                      [style.color]="getTextColorForType(move.type)">
                       {{ move.name }}
                     </mat-chip>
                   }

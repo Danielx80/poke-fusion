@@ -29,4 +29,15 @@ export class TypeColorsService {
     const normalizedType = type.toLowerCase().trim();
     return this.TYPE_COLORS[normalizedType] || 'hsl(0, 0%, 50%)';
   }
+
+  getTextColorForType(type: string): string {
+    const color = this.getTypeColor(type);
+    const lightness = this.extractLightness(color);
+    return lightness > 55 ? 'hsl(0, 0%, 20%)' : 'hsl(0, 0%, 100%)';
+  }
+
+  private extractLightness(hslColor: string): number {
+    const match = hslColor.match(/hsl\([^,]+,\s*[^,]+,\s*([^%]+)%\)/);
+    return match ? parseFloat(match[1]) : 50;
+  }
 }

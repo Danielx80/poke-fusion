@@ -1,10 +1,65 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
+    function isValidFusedPokemon() {
+      let data = request.resource.data;
+      return data.keys().hasAll(['name', 'types', 'stats', 'moves', 'basePokemon', 'createdAt']) &&
+             data.name is string &&
+             data.name.size() > 0 &&
+             data.name.size() <= 100 &&
+             data.types is list &&
+             data.types.size() > 0 &&
+             data.types.size() <= 2 &&
+             data.stats is list &&
+             data.stats.size() == 6 &&
+             data.moves is list &&
+             data.moves.size() > 0 &&
+             data.moves.size() <= 4 &&
+             data.basePokemon is list &&
+             data.basePokemon.size() == 3 &&
+             data.createdAt is timestamp;
+    }
+
+    function isValidStat(stat) {
+      return stat.keys().hasAll(['name', 'value']) &&
+             stat.name is string &&
+             stat.value is int &&
+             stat.value >= 0 &&
+             stat.value <= 255;
+    }
+
+    function isValidMove(move) {
+      return move.keys().hasAll(['name', 'type']) &&
+             move.name is string &&
+             move.name.size() > 0 &&
+             move.name.size() <= 50 &&
+             move.type is string &&
+             move.type.size() > 0 &&
+             move.type.size() <= 20;
+    }
+
+    function isValidBasePokemon(pokemon) {
+      return pokemon.keys().hasAll(['id', 'name', 'types', 'stats', 'moves', 'sprite']) &&
+             pokemon.id is int &&
+             pokemon.id > 0 &&
+             pokemon.name is string &&
+             pokemon.name.size() > 0;
+    }
+
+    function validateFusedPokemonData() {
+      let data = request.resource.data;
+      return isValidFusedPokemon() &&
+             data.stats.hasAll(stat => isValidStat(stat)) &&
+             data.moves.hasAll(move => isValidMove(move)) &&
+             data.basePokemon.hasAll(pokemon => isValidBasePokemon(pokemon));
+    }
+
     match /favorites/{favoriteId} {
       allow read: if true;
-      allow create: if true;
-      allow update: if true;
+      allow create: if validateFusedPokemonData() &&
+                       request.resource.data.createdAt == request.time;
+      allow update: if validateFusedPokemonData() &&
+                       resource.data.createdAt == request.resource.data.createdAt;
       allow delete: if true;
     }
   }

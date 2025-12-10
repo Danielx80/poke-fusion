@@ -54,4 +54,3 @@ ui-debug.log
 
 # Environment files with real credentials
 src/environments/environment.ts
-src/environments/environment.prod.ts
