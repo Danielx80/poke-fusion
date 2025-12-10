@@ -1,0 +1,190 @@
+<div class="fusion-container">
+  <mat-toolbar color="primary" class="toolbar">
+    <a routerLink="/" class="toolbar-title-link">
+      <span class="toolbar-title">PokéFusion</span>
+    </a>
+    <span class="spacer"></span>
+    <button 
+      mat-icon-button 
+      routerLink="/favorites"
+      aria-label="Ver favoritos"
+      class="favorites-button">
+      <mat-icon>favorite</mat-icon>
+    </button>
+  </mat-toolbar>
+
+  <div class="content">
+    <div class="header-section">
+      <h1 class="main-title">Crea tu Pokémon Fusionado</h1>
+      <p class="subtitle">Combina 3 Pokémon aleatorios para crear uno único</p>
+      <button
+        mat-raised-button
+        (click)="generateFusion()"
+        [disabled]="loading()"
+        class="generate-button"
+        aria-label="Generar nueva fusión">
+        <mat-icon [class.spinning]="loading()">autorenew</mat-icon>
+        <span>{{ loading() ? 'Generando...' : 'Re-fusionar' }}</span>
+      </button>
+    </div>
+
+    @if (error()) {
+      <div class="error-container">
+        <mat-icon class="error-icon">error_outline</mat-icon>
+        <p>{{ error() }}</p>
+      </div>
+    }
+
+    @if (loading()) {
+      <div class="loading-container">
+        <div class="skeleton-wrapper">
+          <div class="base-pokemon-showcase">
+            <div class="skeleton skeleton-section-title"></div>
+            <div class="pokemon-showcase">
+              @for (item of [1, 2, 3]; track item) {
+                <div class="pokemon-showcase-item">
+                  <div class="pokemon-image-container">
+                    <div class="skeleton skeleton-avatar"></div>
+                  </div>
+                  <div class="skeleton skeleton-pokemon-name"></div>
+                </div>
+              }
+            </div>
+          </div>
+          <mat-card class="fused-card">
+            <div class="card-header">
+              <div class="fused-title-container">
+                <div class="skeleton skeleton-fused-name"></div>
+                <div class="types-container">
+                  <div class="skeleton skeleton-type-chip"></div>
+                  <div class="skeleton skeleton-type-chip"></div>
+                </div>
+              </div>
+            </div>
+            <div class="card-content">
+              <div class="stats-section">
+                <div class="section-heading">
+                  <div class="skeleton skeleton-icon"></div>
+                  <div class="skeleton skeleton-heading-text"></div>
+                </div>
+                <div class="stat-grid">
+                  @for (item of [1, 2, 3, 4, 5, 6]; track item) {
+                    <div class="stat-item">
+                      <div class="stat-header">
+                        <div class="skeleton skeleton-stat-name"></div>
+                        <div class="skeleton skeleton-stat-value"></div>
+                      </div>
+                      <div class="stat-bar-container">
+                        <div class="skeleton skeleton-stat-bar"></div>
+                      </div>
+                    </div>
+                  }
+                </div>
+              </div>
+              <div class="moves-section">
+                <div class="section-heading">
+                  <div class="skeleton skeleton-icon"></div>
+                  <div class="skeleton skeleton-heading-text"></div>
+                </div>
+                <div class="moves-container">
+                  <div class="skeleton skeleton-move-chip"></div>
+                  <div class="skeleton skeleton-move-chip"></div>
+                </div>
+              </div>
+            </div>
+            <div class="card-actions">
+              <div class="skeleton skeleton-button"></div>
+            </div>
+          </mat-card>
+        </div>
+      </div>
+    }
+
+    @if (!loading() && fusedPokemon()) {
+      <div class="fusion-result">
+        <div class="base-pokemon-showcase">
+          <h2 class="section-title">Pokémon Base</h2>
+          <div class="pokemon-showcase">
+            @for (pokemon of fusedPokemon()!.basePokemon; track pokemon.id) {
+              <div class="pokemon-showcase-item">
+                <div class="pokemon-image-container">
+                  <img [src]="pokemon.sprite" [alt]="pokemon.name" loading="lazy">
+                </div>
+                <span class="pokemon-name">{{ pokemon.name }}</span>
+              </div>
+            }
+          </div>
+        </div>
+
+        <mat-card class="fused-card">
+          <mat-card-header class="card-header">
+            <div class="fused-title-container">
+              <mat-card-title class="fused-name">{{ fusedPokemon()!.name }}</mat-card-title>
+              <div class="types-container">
+                @for (type of fusedPokemon()!.types; track type) {
+                  <mat-chip
+                    class="type-chip"
+                    [style.background-color]="getTypeColor(type)"
+                    [style.color]="'white'">
+                    {{ type }}
+                  </mat-chip>
+                }
+              </div>
+            </div>
+          </mat-card-header>
+
+          <mat-card-content class="card-content">
+            <div class="stats-section">
+              <h3 class="section-heading">
+                <mat-icon>bar_chart</mat-icon>
+                Estadísticas
+              </h3>
+              <div class="stat-grid">
+                @for (stat of fusedPokemon()!.stats; track stat.name) {
+                  <div class="stat-item">
+                    <div class="stat-header">
+                      <span class="stat-name">{{ formatStatName(stat.name) }}</span>
+                      <span class="stat-value">{{ stat.value }}</span>
+                    </div>
+                    <div class="stat-bar-container">
+                      <div
+                        class="stat-bar"
+                        [style.width.%]="(stat.value / 255) * 100"
+                        [style.background-color]="getTypeColor(fusedPokemon()!.types[0])">
+                      </div>
+                    </div>
+                  </div>
+                }
+              </div>
+            </div>
+
+            <div class="moves-section">
+              <h3 class="section-heading">
+                <mat-icon>flash_on</mat-icon>
+                Movimientos
+              </h3>
+              <div class="moves-container">
+                @for (move of fusedPokemon()!.moves; track move) {
+                  <mat-chip class="move-chip">{{ move }}</mat-chip>
+                }
+              </div>
+            </div>
+          </mat-card-content>
+
+          <mat-card-actions class="card-actions">
+            <button
+              mat-raised-button
+              (click)="addToFavorites()"
+              [disabled]="isFavorite()"
+              class="favorite-button"
+              aria-label="Guardar en favoritos">
+              <mat-icon>{{ isFavorite() ? 'favorite' : 'favorite_border' }}</mat-icon>
+              <span>{{ isFavorite() ? 'Ya en Favoritos' : 'Guardar en Favoritos' }}</span>
+            </button>
+          </mat-card-actions>
+        </mat-card>
+      </div>
+    }
+  </div>
+</div>
+

@@ -1,0 +1,159 @@
+<div class="favorites-container">
+  <mat-toolbar color="primary" class="toolbar">
+    <a routerLink="/" class="toolbar-title-link">
+      <span class="toolbar-title">PokéFusion</span>
+    </a>
+    <span class="spacer"></span>
+    <span class="favorites-count">{{ favorites().length }}</span>
+  </mat-toolbar>
+
+  <div class="content">
+    <nav class="breadcrumb" aria-label="Breadcrumb">
+      <a routerLink="/" class="breadcrumb-link">Inicio</a>
+      <span class="breadcrumb-separator">/</span>
+      <span class="breadcrumb-current">Favoritos</span>
+    </nav>
+    @if (!loading() && favorites().length === 0) {
+      <div class="empty-state">
+        <mat-icon class="empty-icon">favorite_border</mat-icon>
+        <h2 class="empty-title">No tienes favoritos aún</h2>
+        <p class="empty-text">Guarda tus fusiones favoritas desde la página principal</p>
+        <button 
+          mat-raised-button 
+          routerLink="/"
+          class="empty-button">
+          <mat-icon>home</mat-icon>
+          <span>Ir a Fusionar</span>
+        </button>
+      </div>
+    }
+
+    @if (loading()) {
+      <div class="favorites-skeleton-grid">
+        @for (item of [1, 2, 3, 4]; track item) {
+          <mat-card class="favorite-card skeleton-favorite-card">
+            <div class="card-header">
+              <div class="favorite-title-container">
+                <div class="skeleton skeleton-favorite-name"></div>
+                <div class="types-container">
+                  <div class="skeleton skeleton-type-chip"></div>
+                  <div class="skeleton skeleton-type-chip"></div>
+                </div>
+              </div>
+            </div>
+            <div class="card-content">
+              <div class="base-pokemon-mini">
+                <div class="skeleton skeleton-mini-title"></div>
+                <div class="pokemon-mini-list">
+                  @for (pokemon of [1, 2, 3]; track pokemon) {
+                    <div class="pokemon-mini-item">
+                      <div class="skeleton skeleton-mini-avatar"></div>
+                      <div class="skeleton skeleton-mini-name"></div>
+                    </div>
+                  }
+                </div>
+              </div>
+              <div class="stats-mini">
+                <div class="skeleton skeleton-mini-title"></div>
+                <div class="stat-mini-grid">
+                  @for (stat of [1, 2, 3, 4, 5, 6]; track stat) {
+                    <div class="stat-mini-item">
+                      <div class="skeleton skeleton-mini-stat-name"></div>
+                      <div class="skeleton skeleton-mini-stat-value"></div>
+                    </div>
+                  }
+                </div>
+              </div>
+              <div class="moves-mini">
+                <div class="skeleton skeleton-mini-title"></div>
+                <div class="moves-mini-container">
+                  <div class="skeleton skeleton-mini-move-chip"></div>
+                  <div class="skeleton skeleton-mini-move-chip"></div>
+                </div>
+              </div>
+            </div>
+            <div class="card-actions">
+              <div class="skeleton skeleton-delete-button"></div>
+            </div>
+          </mat-card>
+        }
+      </div>
+    }
+
+    @if (!loading() && favorites().length > 0) {
+      <div class="favorites-header">
+        <h1 class="page-title">Tus Fusiones Favoritas</h1>
+        <p class="page-subtitle">{{ favorites().length }} {{ favorites().length === 1 ? 'fusión guardada' : 'fusiones guardadas' }}</p>
+      </div>
+
+      <div class="favorites-grid">
+        @for (favorite of favorites(); track favorite.name + favorite.createdAt; let i = $index) {
+          <mat-card class="favorite-card">
+            <mat-card-header class="card-header">
+              <div class="favorite-title-container">
+                <mat-card-title class="favorite-name">{{ favorite.name }}</mat-card-title>
+                <div class="types-container">
+                  @for (type of favorite.types; track type) {
+                    <mat-chip 
+                      class="type-chip"
+                      [style.background-color]="getTypeColor(type)"
+                      [style.color]="'white'">
+                      {{ type }}
+                    </mat-chip>
+                  }
+                </div>
+              </div>
+            </mat-card-header>
+
+            <mat-card-content class="card-content">
+              <div class="base-pokemon-mini">
+                <h4 class="mini-section-title">Pokémon Base</h4>
+                <div class="pokemon-mini-list">
+                  @for (pokemon of favorite.basePokemon; track pokemon.id) {
+                    <div class="pokemon-mini-item">
+                      <img [src]="pokemon.sprite" [alt]="pokemon.name" loading="lazy">
+                      <span class="pokemon-mini-name">{{ pokemon.name }}</span>
+                    </div>
+                  }
+                </div>
+              </div>
+
+              <div class="stats-mini">
+                <h4 class="mini-section-title">Estadísticas</h4>
+                <div class="stat-mini-grid">
+                  @for (stat of favorite.stats; track stat.name) {
+                    <div class="stat-mini-item">
+                      <span class="stat-mini-name">{{ formatStatName(stat.name) }}</span>
+                      <span class="stat-mini-value">{{ stat.value }}</span>
+                    </div>
+                  }
+                </div>
+              </div>
+
+              <div class="moves-mini">
+                <h4 class="mini-section-title">Movimientos</h4>
+                <div class="moves-mini-container">
+                  @for (move of favorite.moves; track move) {
+                    <mat-chip class="move-mini-chip">{{ move }}</mat-chip>
+                  }
+                </div>
+              </div>
+            </mat-card-content>
+
+            <mat-card-actions class="card-actions">
+              <button 
+                mat-raised-button 
+                (click)="removeFavorite(i)"
+                class="delete-button"
+                aria-label="Eliminar favorito">
+                <mat-icon>delete</mat-icon>
+                <span>Eliminar</span>
+              </button>
+            </mat-card-actions>
+          </mat-card>
+        }
+      </div>
+    }
+  </div>
+</div>
+
