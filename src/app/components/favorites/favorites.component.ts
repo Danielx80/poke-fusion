@@ -9,7 +9,7 @@ import { MatToolbarModule } from '@angular/material/toolbar';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
-import { FavoritesService } from '../../services/favorites.service';
+import { FavoritesService, FavoriteWithId } from '../../services/favorites.service';
 import { FusedPokemon } from '../../services/pokemon.service';
 import { TypeColorsService } from '../../services/type-colors.service';
 import { ConfirmDialogComponent } from '../shared/confirm-dialog/confirm-dialog.component';
@@ -34,8 +34,8 @@ import { ConfirmDialogComponent } from '../shared/confirm-dialog/confirm-dialog.
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class FavoritesComponent implements OnInit, OnDestroy {
-  allFavorites = signal<FusedPokemon[]>([]);
-  displayedFavorites = signal<FusedPokemon[]>([]);
+  allFavorites = signal<FavoriteWithId[]>([]);
+  displayedFavorites = signal<FavoriteWithId[]>([]);
   loading = signal(true);
   loadingMore = signal(false);
   selectedFavorites = signal<Set<number>>(new Set());
@@ -76,15 +76,18 @@ export class FavoritesComponent implements OnInit, OnDestroy {
     }
   }
 
-  loadFavorites(): void {
+  async loadFavorites(): Promise<void> {
     this.loading.set(true);
-    setTimeout(() => {
-      const favorites = this.favoritesService.getFavorites();
+    try {
+      const favorites = await this.favoritesService.getFavorites();
       this.allFavorites.set(favorites);
       this.currentPage.set(0);
       this.selectedFavorites.set(new Set());
+    } catch (error) {
+      console.error('Error loading favorites:', error);
+    } finally {
       this.loading.set(false);
-    }, 500);
+    }
   }
 
   setupScrollListener(): void {
@@ -141,22 +144,24 @@ export class FavoritesComponent implements OnInit, OnDestroy {
       }
     });
 
-    dialogRef.afterClosed().subscribe(result => {
-      if (result) {
-        const allFavs = this.allFavorites();
-        const actualIndex = allFavs.findIndex(f =>
-          f.name === favorite.name &&
-          new Date(f.createdAt).getTime() === new Date(favorite.createdAt).getTime()
-        );
-
-        if (actualIndex !== -1) {
-          this.favoritesService.removeFavorite(actualIndex);
-          this.updateFavoritesAfterRemoval(actualIndex);
+    dialogRef.afterClosed().subscribe(async result => {
+      if (result && favorite.id) {
+        try {
+          await this.favoritesService.removeFavorite(favorite.id);
+          const allFavs = this.allFavorites().filter(f => f.id !== favorite.id);
+          this.allFavorites.set(allFavs);
           this.snackBar.open('Fusión eliminada de favoritos', 'Cerrar', {
             duration: 2000,
             horizontalPosition: 'center',
             verticalPosition: 'top',
             panelClass: ['snackbar-success']
+          });
+        } catch (error) {
+          this.snackBar.open('Error al eliminar favorito', 'Cerrar', {
+            duration: 2000,
+            horizontalPosition: 'center',
+            verticalPosition: 'top',
+            panelClass: ['snackbar-error']
           });
         }
       }
@@ -178,40 +183,40 @@ export class FavoritesComponent implements OnInit, OnDestroy {
       }
     });
 
-    dialogRef.afterClosed().subscribe(result => {
+    dialogRef.afterClosed().subscribe(async result => {
       if (result) {
-        const allFavs = [...this.allFavorites()];
-        selected.forEach(displayIndex => {
-          const favorite = this.displayedFavorites()[displayIndex];
-          if (favorite) {
-            const actualIndex = allFavs.findIndex(f =>
-              f.name === favorite.name &&
-              new Date(f.createdAt).getTime() === new Date(favorite.createdAt).getTime()
-            );
-            if (actualIndex !== -1) {
-              this.favoritesService.removeFavorite(actualIndex);
-              allFavs.splice(actualIndex, 1);
-            }
-          }
-        });
+        try {
+          const favoritesToRemove = selected
+            .map(index => this.displayedFavorites()[index])
+            .filter(f => f?.id);
+          
+          await Promise.all(
+            favoritesToRemove.map(f => this.favoritesService.removeFavorite(f.id))
+          );
 
-        this.allFavorites.set(allFavs);
-        this.selectedFavorites.set(new Set());
-        this.snackBar.open(`${selected.length} ${selected.length === 1 ? 'fusión eliminada' : 'fusiones eliminadas'}`, 'Cerrar', {
-          duration: 2000,
-          horizontalPosition: 'center',
-          verticalPosition: 'top',
-          panelClass: ['snackbar-success']
-        });
+          const remainingIds = new Set(favoritesToRemove.map(f => f.id));
+          const allFavs = this.allFavorites().filter(f => !remainingIds.has(f.id));
+          
+          this.allFavorites.set(allFavs);
+          this.selectedFavorites.set(new Set());
+          this.snackBar.open(`${selected.length} ${selected.length === 1 ? 'fusión eliminada' : 'fusiones eliminadas'}`, 'Cerrar', {
+            duration: 2000,
+            horizontalPosition: 'center',
+            verticalPosition: 'top',
+            panelClass: ['snackbar-success']
+          });
+        } catch (error) {
+          this.snackBar.open('Error al eliminar favoritos', 'Cerrar', {
+            duration: 2000,
+            horizontalPosition: 'center',
+            verticalPosition: 'top',
+            panelClass: ['snackbar-error']
+          });
+        }
       }
     });
   }
 
-  private updateFavoritesAfterRemoval(removedIndex: number): void {
-    const allFavs = [...this.allFavorites()];
-    allFavs.splice(removedIndex, 1);
-    this.allFavorites.set(allFavs);
-  }
 
   getTypeColor(type: string): string {
     return this.typeColorsService.getTypeColor(type);

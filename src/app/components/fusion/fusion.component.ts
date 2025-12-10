@@ -39,10 +39,18 @@ export class FusionComponent implements OnInit {
   pokemon3 = signal<Pokemon | null>(null);
   fusedPokemon = signal<FusedPokemon | null>(null);
 
-  isFavorite = computed(() => {
+  isFavorite = signal(false);
+
+  private checkFavorite(): void {
     const fused = this.fusedPokemon();
-    return fused ? this.favoritesService.isFavorite(fused) : false;
-  });
+    if (fused) {
+      this.favoritesService.isFavorite(fused).then(result => {
+        this.isFavorite.set(result);
+      });
+    } else {
+      this.isFavorite.set(false);
+    }
+  }
 
   constructor(
     private pokemonService: PokemonService,
@@ -66,9 +74,9 @@ export class FusionComponent implements OnInit {
         this.pokemon1.set(pokemon[0]);
         this.pokemon2.set(pokemon[1]);
         this.pokemon3.set(pokemon[2]);
-        this.fusedPokemon.set(
-          this.pokemonService.fusePokemon(pokemon[0], pokemon[1], pokemon[2])
-        );
+        const fused = this.pokemonService.fusePokemon(pokemon[0], pokemon[1], pokemon[2]);
+        this.fusedPokemon.set(fused);
+        this.checkFavorite();
         this.loading.set(false);
       },
       error: (err) => {
@@ -97,16 +105,26 @@ export class FusionComponent implements OnInit {
         }
       });
 
-      dialogRef.afterClosed().subscribe(result => {
+      dialogRef.afterClosed().subscribe(async result => {
         if (result) {
-          this.favoritesService.addFavorite(fused);
-          this.snackBar.open('Fusión guardada en favoritos', 'Cerrar', {
-            duration: 2000,
-            horizontalPosition: 'center',
-            verticalPosition: 'top',
-            panelClass: ['snackbar-success']
-          });
-          this.generateFusion();
+          try {
+            await this.favoritesService.addFavorite(fused);
+            this.isFavorite.set(true);
+            this.snackBar.open('Fusión guardada en favoritos', 'Cerrar', {
+              duration: 2000,
+              horizontalPosition: 'center',
+              verticalPosition: 'top',
+              panelClass: ['snackbar-success']
+            });
+            this.generateFusion();
+          } catch (error) {
+            this.snackBar.open('Error al guardar favorito', 'Cerrar', {
+              duration: 2000,
+              horizontalPosition: 'center',
+              verticalPosition: 'top',
+              panelClass: ['snackbar-error']
+            });
+          }
         }
       });
     }

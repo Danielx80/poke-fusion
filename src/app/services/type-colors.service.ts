@@ -27,14 +27,6 @@ export class TypeColorsService {
 
   getTypeColor(type: string): string {
     const normalizedType = type.toLowerCase().trim();
-    const color = this.TYPE_COLORS[normalizedType] || 'hsl(0, 0%, 50%)';
-    if (!this.TYPE_COLORS[normalizedType]) {
-      console.warn(
-        `Tipo "${type}" (normalizado: "${normalizedType}") no encontrado en colores, usando gris por defecto`
-      );
-    } else {
-      console.log(`Tipo: ${normalizedType} -> Color: ${color}`);
-    }
-    return color;
+    return this.TYPE_COLORS[normalizedType] || 'hsl(0, 0%, 50%)';
   }
 }

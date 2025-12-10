@@ -66,6 +66,12 @@
   margin: 0 auto;
 }
 
+@media (max-width: 768px) {
+  .content {
+    padding: 1.5rem 1rem;
+  }
+}
+
 .header-section {
   text-align: center;
   margin-bottom: 3rem;
@@ -166,11 +172,18 @@
 }
 
 .skeleton-wrapper {
-  display: flex;
-  flex-direction: column;
+  display: grid;
+  grid-template-columns: 1fr;
   gap: 2rem;
-  max-width: 700px;
-  margin: 0 auto;
+  animation: fadeIn 0.4s ease-in;
+}
+
+@media (min-width: 1024px) {
+  .skeleton-wrapper {
+    grid-template-columns: 1fr 1fr;
+    gap: 2rem;
+    align-items: start;
+  }
 }
 
 .skeleton-section-title {
@@ -566,41 +579,136 @@
 }
 
 @media (max-width: 768px) {
+  .content-container {
+    padding: 1.5rem 1rem;
+  }
+
   .main-title {
-    font-size: 2rem;
+    font-size: 1.75rem;
   }
 
   .subtitle {
-    font-size: 1rem;
+    font-size: 0.875rem;
   }
 
-  .fusion-result {
-    gap: 1.5rem;
+  .error-container {
+    padding: 1.5rem 1rem;
   }
 
-  .base-pokemon-showcase {
-    padding: 1.5rem;
+  .loading-container {
+    padding: 1.5rem 0;
   }
 
-  .pokemon-showcase {
+  .fusion-result,
+  .skeleton-wrapper {
     gap: 1rem;
   }
 
-  .pokemon-showcase-item {
-    min-width: 100px;
+  .base-pokemon-showcase {
     padding: 1rem;
   }
 
+  .section-title {
+    font-size: 1.25rem;
+    margin-bottom: 1rem;
+  }
+
+  .pokemon-showcase {
+    gap: 0.75rem;
+  }
+
+  .pokemon-showcase-item {
+    min-width: 90px;
+    padding: 0.75rem;
+  }
+
   .pokemon-image-container {
-    width: 80px;
-    height: 80px;
+    width: 70px;
+    height: 70px;
+  }
+
+  .pokemon-name {
+    font-size: 0.75rem;
+  }
+
+  .fused-card {
+    margin: 0;
+  }
+
+  .card-header {
+    padding: 1.25rem 1rem;
   }
 
   .fused-name {
-    font-size: 1.5rem;
+    font-size: 1.25rem;
+  }
+
+  .fused-title-container {
+    gap: 0.75rem;
+  }
+
+  .type-chip {
+    font-size: 0.75rem;
+    padding: 0.25rem 0.625rem;
+  }
+
+  .card-content {
+    padding: 1.25rem 1rem;
+  }
+
+  .section-heading {
+    font-size: 1rem;
+    margin-bottom: 0.75rem;
+  }
+
+  .section-heading mat-icon {
+    font-size: 1.125rem;
+    width: 1.125rem;
+    height: 1.125rem;
+  }
+
+  .stats-section {
+    margin-bottom: 1.5rem;
   }
 
   .stat-grid {
     grid-template-columns: 1fr;
+    gap: 0.75rem;
+  }
+
+  .stat-name {
+    font-size: 0.8125rem;
+  }
+
+  .stat-value {
+    font-size: 0.875rem;
+  }
+
+  .moves-section {
+    margin-top: 1.5rem;
+  }
+
+  .moves-container {
+    gap: 0.375rem;
+    margin-top: 0.75rem;
+  }
+
+  .move-chip {
+    font-size: 0.75rem;
+    padding: 0.25rem 0.625rem;
+  }
+
+  .card-actions {
+    padding: 1rem;
+  }
+
+  .favorite-button {
+    font-size: 0.875rem;
+    padding: 0.5rem 1rem;
+  }
+
+  .generate-button {
+    font-size: 0.875rem;
+    padding: 0.625rem 1.25rem;
   }
 }

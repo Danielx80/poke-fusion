@@ -65,6 +65,12 @@
   margin: 0 auto;
 }
 
+@media (max-width: 768px) {
+  .content {
+    padding: 1.5rem 1rem;
+  }
+}
+
 .empty-state {
   display: flex;
   flex-direction: column;
@@ -543,20 +549,135 @@
 
 @media (max-width: 768px) {
   .page-title {
-    font-size: 2rem;
+    font-size: 1.75rem;
+  }
+
+  .page-subtitle {
+    font-size: 0.875rem;
+  }
+
+  .favorites-header {
+    padding: 1.5rem 0;
+  }
+
+  .selection-actions {
+    margin-top: 1rem;
+  }
+
+  .delete-selected-button {
+    font-size: 0.875rem;
+    padding: 0.5rem 1rem;
   }
 
   .favorites-grid,
   .favorites-skeleton-grid {
     grid-template-columns: 1fr;
-    gap: 1.5rem;
+    gap: 1rem;
+    margin-top: 1.5rem;
+  }
+
+  .favorite-card {
+    margin: 0;
+  }
+
+  .card-header {
+    padding: 1rem;
+  }
+
+  .favorite-title-container {
+    gap: 0.5rem;
   }
 
   .favorite-name {
-    font-size: 1.125rem;
+    font-size: 1rem;
+  }
+
+  .type-chip {
+    font-size: 0.75rem;
+    padding: 0.25rem 0.625rem;
+  }
+
+  .card-content {
+    padding: 1rem;
+    gap: 1rem;
+  }
+
+  .mini-section-title {
+    font-size: 0.8125rem;
+    margin-bottom: 0.5rem;
+  }
+
+  .base-pokemon-mini {
+    padding-bottom: 0.75rem;
+  }
+
+  .pokemon-mini-list {
+    gap: 0.5rem;
+  }
+
+  .pokemon-mini-item {
+    gap: 0.375rem;
+  }
+
+  .pokemon-mini-avatar {
+    width: 48px;
+    height: 48px;
+  }
+
+  .pokemon-mini-name {
+    font-size: 0.6875rem;
   }
 
   .stat-mini-grid {
     grid-template-columns: 1fr;
+    gap: 0.5rem;
+  }
+
+  .stat-mini-item {
+    gap: 0.25rem;
+  }
+
+  .stat-mini-name {
+    font-size: 0.75rem;
+  }
+
+  .stat-mini-value {
+    font-size: 0.8125rem;
+  }
+
+  .moves-mini-container {
+    gap: 0.375rem;
+  }
+
+  .move-mini-chip {
+    font-size: 0.6875rem;
+    padding: 0.25rem 0.5rem;
+  }
+
+  .card-actions {
+    padding: 0.75rem 1rem;
+  }
+
+  .delete-button {
+    font-size: 0.875rem;
+    padding: 0.5rem 1rem;
+  }
+
+  .empty-state {
+    padding: 3rem 1rem;
+  }
+
+  .empty-state-icon {
+    font-size: 64px;
+    width: 64px;
+    height: 64px;
+  }
+
+  .empty-state-title {
+    font-size: 1.5rem;
+  }
+
+  .empty-state-message {
+    font-size: 0.875rem;
   }
 }

@@ -1,35 +1,101 @@
 import { Injectable } from '@angular/core';
+import { 
+  collection, 
+  addDoc, 
+  getDocs, 
+  deleteDoc, 
+  doc, 
+  query, 
+  where,
+  orderBy,
+  Timestamp 
+} from 'firebase/firestore';
+import { db } from '../config/firebase.config';
 import { FusedPokemon } from './pokemon.service';
+
+export interface FavoriteWithId extends FusedPokemon {
+  id: string;
+}
 
 @Injectable({
   providedIn: 'root'
 })
 export class FavoritesService {
-  private storageKey = 'pokefusion_favorites';
+  private collectionName = 'favorites';
 
-  getFavorites(): FusedPokemon[] {
-    const stored = localStorage.getItem(this.storageKey);
-    return stored ? JSON.parse(stored) : [];
+  async getFavorites(): Promise<FavoriteWithId[]> {
+    try {
+      const favoritesRef = collection(db, this.collectionName);
+      const q = query(favoritesRef, orderBy('createdAt', 'desc'));
+      const querySnapshot = await getDocs(q);
+      
+      return querySnapshot.docs.map(docSnap => {
+        const data = docSnap.data();
+        const createdAt = data['createdAt'];
+        return {
+          id: docSnap.id,
+          ...data,
+          createdAt: createdAt?.toDate?.()?.toISOString() || createdAt
+        } as FavoriteWithId;
+      });
+    } catch (error) {
+      console.error('Error getting favorites:', error);
+      return [];
+    }
   }
 
-  addFavorite(fused: FusedPokemon): void {
-    const favorites = this.getFavorites();
-    favorites.push(fused);
-    localStorage.setItem(this.storageKey, JSON.stringify(favorites));
+  async addFavorite(fused: FusedPokemon): Promise<string> {
+    try {
+      const favoritesRef = collection(db, this.collectionName);
+      const docRef = await addDoc(favoritesRef, {
+        ...fused,
+        createdAt: Timestamp.fromDate(new Date(fused.createdAt || new Date()))
+      });
+      return docRef.id;
+    } catch (error) {
+      console.error('Error adding favorite:', error);
+      throw error;
+    }
   }
 
-  removeFavorite(index: number): void {
-    const favorites = this.getFavorites();
-    favorites.splice(index, 1);
-    localStorage.setItem(this.storageKey, JSON.stringify(favorites));
+  async removeFavorite(id: string): Promise<void> {
+    try {
+      const favoriteRef = doc(db, this.collectionName, id);
+      await deleteDoc(favoriteRef);
+    } catch (error) {
+      console.error('Error removing favorite:', error);
+      throw error;
+    }
   }
 
-  isFavorite(fused: FusedPokemon): boolean {
-    const favorites = this.getFavorites();
-    return favorites.some(f =>
-      f.name === fused.name &&
-      new Date(f.createdAt).getTime() === new Date(fused.createdAt).getTime()
-    );
+  async isFavorite(fused: FusedPokemon): Promise<boolean> {
+    try {
+      const favoritesRef = collection(db, this.collectionName);
+      const q = query(
+        favoritesRef,
+        where('name', '==', fused.name)
+      );
+      const querySnapshot = await getDocs(q);
+      
+      if (querySnapshot.empty) return false;
+      
+      const favorites = querySnapshot.docs.map(docSnap => {
+        const data = docSnap.data();
+        const createdAt = data['createdAt'];
+        return {
+          ...data,
+          createdAt: createdAt?.toDate?.()?.toISOString() || createdAt
+        } as FusedPokemon;
+      });
+      
+      return favorites.some(f =>
+        f.name === fused.name &&
+        new Date(f.createdAt).getTime() === new Date(fused.createdAt).getTime()
+      );
+    } catch (error) {
+      console.error('Error checking favorite:', error);
+      return false;
+    }
   }
 }
 

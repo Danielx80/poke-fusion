@@ -45,17 +45,12 @@ export class PokemonService {
           this.http.get<any>(m.move.url).pipe(
             map((moveData: any): Move => {
               const moveType = moveData.type?.name || 'normal';
-              console.log(`[DEBUG] Movimiento: ${moveData.name} | Tipo recibido: ${moveData.type?.name || 'NO TIENE TIPO'} | Tipo usado: ${moveType}`);
-              if (!moveData.type?.name) {
-                console.warn(`Move ${moveData.name} no tiene tipo en la API, usando 'normal'`);
-              }
               return {
                 name: moveData.name,
                 type: moveType
               };
             }),
-            catchError(error => {
-              console.error('Error obteniendo tipo de movimiento:', error);
+            catchError(() => {
               return of({
                 name: m.move.name,
                 type: 'normal'
