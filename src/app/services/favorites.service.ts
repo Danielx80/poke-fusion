@@ -1,14 +1,15 @@
 import { Injectable } from '@angular/core';
-import { 
-  collection, 
-  addDoc, 
-  getDocs, 
-  deleteDoc, 
-  doc, 
-  query, 
+import {
+  collection,
+  addDoc,
+  getDocs,
+  deleteDoc,
+  doc,
+  query,
   where,
   orderBy,
-  Timestamp 
+  Timestamp,
+  serverTimestamp
 } from 'firebase/firestore';
 import { db } from '../config/firebase.config';
 import { FusedPokemon } from './pokemon.service';
@@ -28,7 +29,7 @@ export class FavoritesService {
       const favoritesRef = collection(db, this.collectionName);
       const q = query(favoritesRef, orderBy('createdAt', 'desc'));
       const querySnapshot = await getDocs(q);
-      
+
       return querySnapshot.docs.map(docSnap => {
         const data = docSnap.data();
         const createdAt = data['createdAt'];
@@ -47,10 +48,15 @@ export class FavoritesService {
   async addFavorite(fused: FusedPokemon): Promise<string> {
     try {
       const favoritesRef = collection(db, this.collectionName);
-      const docRef = await addDoc(favoritesRef, {
-        ...fused,
-        createdAt: Timestamp.fromDate(new Date(fused.createdAt || new Date()))
-      });
+      const favoriteData = {
+        name: fused.name,
+        types: fused.types,
+        stats: fused.stats,
+        moves: fused.moves,
+        basePokemon: fused.basePokemon,
+        createdAt: serverTimestamp()
+      };
+      const docRef = await addDoc(favoritesRef, favoriteData);
       return docRef.id;
     } catch (error) {
       console.error('Error adding favorite:', error);
@@ -76,9 +82,9 @@ export class FavoritesService {
         where('name', '==', fused.name)
       );
       const querySnapshot = await getDocs(q);
-      
+
       if (querySnapshot.empty) return false;
-      
+
       const favorites = querySnapshot.docs.map(docSnap => {
         const data = docSnap.data();
         const createdAt = data['createdAt'];
@@ -87,7 +93,7 @@ export class FavoritesService {
           createdAt: createdAt?.toDate?.()?.toISOString() || createdAt
         } as FusedPokemon;
       });
-      
+
       return favorites.some(f =>
         f.name === fused.name &&
         new Date(f.createdAt).getTime() === new Date(fused.createdAt).getTime()

@@ -10,7 +10,6 @@ import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { FavoritesService, FavoriteWithId } from '../../services/favorites.service';
-import { FusedPokemon } from '../../services/pokemon.service';
 import { TypeColorsService } from '../../services/type-colors.service';
 import { ConfirmDialogComponent } from '../shared/confirm-dialog/confirm-dialog.component';
 
@@ -189,14 +188,21 @@ export class FavoritesComponent implements OnInit, OnDestroy {
   }
 
   removeSelected(): void {
-    const selected = Array.from(this.selectedFavorites()).sort((a, b) => b - a);
-    if (selected.length === 0) return;
+    const selectedIndices = Array.from(this.selectedFavorites());
+    if (selectedIndices.length === 0) return;
+
+    const displayedFavs = this.displayedFavorites();
+    const favoritesToRemove = selectedIndices
+      .map(index => displayedFavs[index])
+      .filter(f => f?.id);
+
+    if (favoritesToRemove.length === 0) return;
 
     const dialogRef = this.dialog.open(ConfirmDialogComponent, {
       width: '400px',
       data: {
         title: 'Eliminar favoritos',
-        message: `¿Estás seguro de que deseas eliminar ${selected.length} ${selected.length === 1 ? 'fusión' : 'fusiones'} de favoritos?`,
+        message: `¿Estás seguro de que deseas eliminar ${favoritesToRemove.length} ${favoritesToRemove.length === 1 ? 'fusión' : 'fusiones'} de favoritos?`,
         confirmText: 'Eliminar',
         cancelText: 'Cancelar',
         isDestructive: true
@@ -206,20 +212,17 @@ export class FavoritesComponent implements OnInit, OnDestroy {
     dialogRef.afterClosed().subscribe(async result => {
       if (result) {
         try {
-          const favoritesToRemove = selected
-            .map(index => this.displayedFavorites()[index])
-            .filter(f => f?.id);
-          
+          const idsToRemove = new Set(favoritesToRemove.map(f => f.id).filter(id => id));
+
           await Promise.all(
-            favoritesToRemove.map(f => this.favoritesService.removeFavorite(f.id))
+            Array.from(idsToRemove).map(id => this.favoritesService.removeFavorite(id))
           );
 
-          const remainingIds = new Set(favoritesToRemove.map(f => f.id));
-          const allFavs = this.allFavorites().filter(f => !remainingIds.has(f.id));
-          
+          const allFavs = this.allFavorites().filter(f => !idsToRemove.has(f.id));
+
           this.allFavorites.set(allFavs);
           this.selectedFavorites.set(new Set());
-          this.snackBar.open(`${selected.length} ${selected.length === 1 ? 'fusión eliminada' : 'fusiones eliminadas'}`, 'Cerrar', {
+          this.snackBar.open(`${favoritesToRemove.length} ${favoritesToRemove.length === 1 ? 'fusión eliminada' : 'fusiones eliminadas'}`, 'Cerrar', {
             duration: 2000,
             horizontalPosition: 'center',
             verticalPosition: 'top',

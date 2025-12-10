@@ -570,7 +570,9 @@ https://TU_PROJECT_ID.firebaseapp.com
 
 ## URL de Producción
 
-[Agregar URL de Firebase Hosting aquí]
+**Aplicación desplegada**: https://poke-fusion.web.app
+
+**Consola de Firebase**: https://console.firebase.google.com/project/poke-fusion/overview
 
 ## Licencia
 

@@ -5,8 +5,8 @@
     </a>
     <span class="spacer"></span>
     <nav class="navbar-nav">
-      <a routerLink="/" class="nav-link" routerLinkActive="active">Re-fusionar</a>
-      <a routerLink="/favorites" class="nav-link" routerLinkActive="active">Favoritos</a>
+      <a routerLink="/" class="nav-link" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">Re-fusionar</a>
+      <a routerLink="/favorites" class="nav-link" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">Favoritos</a>
     </nav>
   </mat-toolbar>
 
